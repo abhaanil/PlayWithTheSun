@@ -83,3 +83,22 @@ body {
     border-radius: 50%;
     cursor: pointer;
 }
+
+/* New wrapper */
+.color-picker-wrapper {
+    position: relative;
+    width: 40px;
+    height: 40px;
+}
+
+/* Now the input covers the button */
+#hiddenColorInput {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    opacity: 0;
+    /* Invisible but clickable */
+    cursor: pointer;
+}
