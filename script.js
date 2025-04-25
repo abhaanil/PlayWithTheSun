@@ -1,8 +1,11 @@
 const grid = document.getElementById('circleGrid');
 const downloadBtn = document.getElementById('downloadBtn');
 const colorButtons = document.querySelectorAll('.colorBtn');
+const randomColorBtn = document.getElementById('randomColorBtn');
+const hiddenColorInput = document.getElementById('hiddenColorInput');
+
 let isMouseDown = false;
-let currentColor = '#191919'; // default black
+let currentColor = '#191919';
 
 const totalCircles = 100 * 50;
 
@@ -121,4 +124,21 @@ downloadBtn.addEventListener('click', () => {
     link.href = canvas.toDataURL('image/png');
     link.download = 'play.png';
     link.click();
+});
+
+// Regular color buttons
+colorButtons.forEach(button => {
+    if (button.id !== "colorPickerBtn") {
+        button.addEventListener('click', () => {
+            currentColor = button.getAttribute('data-color');
+        });
+    }
+});
+
+// When user picks a color manually
+hiddenColorInput.addEventListener('input', (event) => {
+    const selectedColor = event.target.value;
+    currentColor = selectedColor;
+    const colorPickerBtn = document.getElementById('colorPickerBtn');
+    colorPickerBtn.style.backgroundColor = selectedColor;
 });
