@@ -39,11 +39,21 @@ document.addEventListener('mouseup', () => {
     isMouseDown = false;
 });
 
-// Color button events
+// Regular color buttons
 colorButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        currentColor = button.getAttribute('data-color');
-    });
+    if (button.id !== "colorPickerBtn") {
+        button.addEventListener('click', () => {
+            currentColor = button.getAttribute('data-color');
+        });
+    }
+});
+
+// When user picks a color manually
+hiddenColorInput.addEventListener('input', (event) => {
+    const selectedColor = event.target.value;
+    currentColor = selectedColor;
+    const colorPickerBtn = document.getElementById('colorPickerBtn');
+    colorPickerBtn.style.backgroundColor = selectedColor;
 });
 
 // Toggle function
@@ -52,25 +62,22 @@ function toggleCircle(circle) {
     const circleColor = circle.dataset.color;
 
     if (!active) {
-        // If not active, activate with current color
         circle.style.backgroundColor = currentColor;
         circle.dataset.active = "true";
         circle.dataset.color = currentColor;
     } else {
         if (circleColor === currentColor) {
-            // If already active with same color, turn off
             circle.style.backgroundColor = '#f3f3f3';
             circle.dataset.active = "false";
             circle.dataset.color = "";
         } else {
-            // If active but different color selected, change color
             circle.style.backgroundColor = currentColor;
             circle.dataset.color = currentColor;
         }
     }
 }
 
-// Download cropped PNG
+// Download as SVG instead of PNG
 downloadBtn.addEventListener('click', () => {
     const circles = document.querySelectorAll('.circle');
     const columns = 100;
@@ -100,45 +107,29 @@ downloadBtn.addEventListener('click', () => {
     const croppedWidth = maxX - minX + circleSize + padding * 2;
     const croppedHeight = maxY - minY + circleSize + padding * 2;
 
-    const canvas = document.createElement('canvas');
-    canvas.width = croppedWidth;
-    canvas.height = croppedHeight;
-    const ctx = canvas.getContext('2d');
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Create SVG content
+    let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${croppedWidth}" height="${croppedHeight}" viewBox="0 0 ${croppedWidth} ${croppedHeight}">`;
 
     activeCircles.forEach(({ x, y, color }) => {
-        ctx.beginPath();
-        ctx.arc(
-            x - minX + padding + circleSize / 2,
-            y - minY + padding + circleSize / 2,
-            circleSize / 2,
-            0,
-            2 * Math.PI
-        );
-        ctx.fillStyle = color;
-        ctx.fill();
+        const adjustedX = x - minX + padding + circleSize / 2;
+        const adjustedY = y - minY + padding + circleSize / 2;
+        const radius = circleSize / 2;
+
+        svgContent += `<circle cx="${adjustedX}" cy="${adjustedY}" r="${radius}" fill="${color}" />`;
     });
 
+    svgContent += `</svg>`;
+
+    // Trigger SVG download
+    const blob = new Blob([svgContent], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
     const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png');
-    link.download = 'play.png';
+    link.href = url;
+    link.download = 'play.svg';
+    document.body.appendChild(link);
     link.click();
-});
+    document.body.removeChild(link);
 
-// Regular color buttons
-colorButtons.forEach(button => {
-    if (button.id !== "colorPickerBtn") {
-        button.addEventListener('click', () => {
-            currentColor = button.getAttribute('data-color');
-        });
-    }
-});
-
-// When user picks a color manually
-hiddenColorInput.addEventListener('input', (event) => {
-    const selectedColor = event.target.value;
-    currentColor = selectedColor;
-    const colorPickerBtn = document.getElementById('colorPickerBtn');
-    colorPickerBtn.style.backgroundColor = selectedColor;
+    URL.revokeObjectURL(url);
 });
